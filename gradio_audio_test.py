@@ -34,7 +34,8 @@ with gr.Blocks() as demo:
             sources=["microphone"],
             type="numpy",
             label="Record Audio",
-            interactive=True
+            interactive=True,
+            streaming=False  # Disable streaming to prevent connection issues
         )
     
     with gr.Row():
@@ -52,4 +53,11 @@ with gr.Blocks() as demo:
     )
 
 if __name__ == "__main__":
-    demo.queue().launch(share=True, debug=True)
+    demo.queue(concurrency_count=5, max_size=20).launch(
+        server_name="0.0.0.0",  # Allow external connections
+        server_port=7860,       # Specify port explicitly
+        share=True, 
+        debug=True,
+        enable_queue=True,
+        max_threads=40         # Increase thread limit
+    )
