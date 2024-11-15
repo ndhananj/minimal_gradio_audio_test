@@ -2,17 +2,13 @@ import gradio as gr
 import numpy as np
 
 def process_audio(audio):
-    """
-    Simple function to verify audio input is working.
-    Prints debug info and returns basic audio stats.
-    """
+    print("Audio processing started...")
     if audio is None:
         return "No audio received"
     
     sr, y = audio
     duration = len(y)/sr
     
-    # Basic audio statistics
     stats = f"""
     Audio received:
     - Duration: {duration:.2f}s
@@ -22,42 +18,19 @@ def process_audio(audio):
     - Mean: {np.mean(y):.3f}
     - RMS: {np.sqrt(np.mean(y**2)):.3f}
     """
-    print(stats)  # For server-side debug
+    print(stats)
     return stats
 
-# Create minimal interface
-with gr.Blocks() as demo:
-    gr.Markdown("## Gradio Audio Test")
-    
-    with gr.Row():
-        audio_input = gr.Audio(
-            sources=["microphone"],
-            type="numpy",
-            label="Record Audio",
-            interactive=True,
-            streaming=False  # Disable streaming to prevent connection issues
-        )
-    
-    with gr.Row():
-        stats_output = gr.Textbox(
-            label="Audio Statistics",
-            lines=8
-        )
-    
-    # Process button
-    process_btn = gr.Button("Process Audio")
-    process_btn.click(
-        fn=process_audio,
-        inputs=audio_input,
-        outputs=stats_output
-    )
+demo = gr.Interface(
+    fn=process_audio,
+    inputs=gr.Audio(
+        sources=["microphone"],
+        type="numpy",
+        streaming=False
+    ),
+    outputs="text",
+    title="Audio Test"
+)
 
 if __name__ == "__main__":
-    demo.queue(concurrency_count=5, max_size=20).launch(
-        server_name="0.0.0.0",  # Allow external connections
-        server_port=7860,       # Specify port explicitly
-        share=True, 
-        debug=True,
-        enable_queue=True,
-        max_threads=40         # Increase thread limit
-    )
+    demo.queue().launch(share=True)  # Added queue()
